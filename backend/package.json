@@ -17,6 +17,10 @@
   ],
   "author": "choh9863",
   "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0 <=20.x",
+    "npm": ">=8.0.0"
+  },
   "dependencies": {
     "ansi-to-html": "^0.7.2",
     "better-sqlite3": "^9.2.2",

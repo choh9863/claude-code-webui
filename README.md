@@ -20,9 +20,12 @@ A modern web-based user interface for Claude CLI, providing enhanced accessibili
 
 ## Prerequisites
 
-- Node.js 18+ and npm
+- **Node.js 18.x or 20.x** (⚠️ Node 22+ is not yet supported due to native dependency limitations)
+- npm 8+ (comes with Node.js)
 - Claude CLI installed and authenticated (`claude` command available)
 - Modern web browser
+
+> **Note**: This project uses `node-pty-prebuilt-multiarch` which provides prebuilt binaries up to Node 20. If you're using Node 22+, please downgrade to Node 20 LTS for compatibility.
 
 ## Installation
 
@@ -150,6 +153,12 @@ For production, consider:
 - Implementing authentication
 
 ## Troubleshooting
+
+**npm install fails with node-gyp or prebuild errors**
+- You may be using Node 22+ which is not yet supported
+- Downgrade to Node 20 LTS: `nvm install 20 && nvm use 20`
+- Or use Node 18.x: `nvm install 18 && nvm use 18`
+- Run `npm install` again after switching Node versions
 
 **Claude CLI not found**
 - Ensure Claude CLI is installed: `which claude`
