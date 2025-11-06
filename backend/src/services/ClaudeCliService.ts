@@ -1,4 +1,4 @@
-import * as pty from 'node-pty';
+import * as pty from 'node-pty-prebuilt-multiarch';
 import { EventEmitter } from 'events';
 import stripAnsi from 'strip-ansi';
 

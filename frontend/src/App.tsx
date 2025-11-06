@@ -137,34 +137,28 @@ function App() {
     socketService.sendMessage(currentSessionId, message);
   };
 
-  // Set up WebSocket event listeners for current session
+  // Set up WebSocket event listeners for all sessions
   useEffect(() => {
-    if (!currentSessionId) return;
-
     const handleMessageChunk = (data: any) => {
-      if (data.sessionId === currentSessionId) {
-        appendToLastMessage(data.sessionId, data.chunk);
-      }
+      // Update message for any active session, not just the current one
+      appendToLastMessage(data.sessionId, data.chunk);
     };
 
     const handleSessionStatus = (data: any) => {
-      if (data.sessionId === currentSessionId) {
-        setSessionStatus(data.sessionId, data.status);
-      }
+      // Update status for any session
+      setSessionStatus(data.sessionId, data.status);
     };
 
     const handleError = (data: any) => {
-      if (data.sessionId === currentSessionId) {
-        console.error('Session error:', data.error);
-        addMessage(currentSessionId, {
-          id: `error-${Date.now()}`,
-          sessionId: currentSessionId,
-          role: 'system',
-          content: `Error: ${data.error}`,
-          metadata: { status: 'error', error: data.error },
-          createdAt: new Date().toISOString(),
-        });
-      }
+      console.error('Session error:', data.error);
+      addMessage(data.sessionId, {
+        id: `error-${Date.now()}`,
+        sessionId: data.sessionId,
+        role: 'system',
+        content: `Error: ${data.error}`,
+        metadata: { status: 'error', error: data.error },
+        createdAt: new Date().toISOString(),
+      });
     };
 
     socketService.onMessageChunk(handleMessageChunk);
@@ -176,7 +170,7 @@ function App() {
       socketService.offSessionStatus(handleSessionStatus);
       socketService.offError(handleError);
     };
-  }, [currentSessionId]);
+  }, []); // Empty dependency array - set up once on mount
 
   // Handle create project
   const handleCreateProject = async (
