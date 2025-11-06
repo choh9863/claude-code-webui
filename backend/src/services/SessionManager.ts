@@ -57,8 +57,9 @@ export class SessionManager extends EventEmitter {
     cliSession.on('parsed_output', (data) => {
       this.emit('session_parsed_output', data);
 
-      // Auto-save if enabled
-      if (sessionData.autoSaveEnabled) {
+      // Auto-save if enabled (check latest state from database)
+      const currentSessionData = SessionModel.findById(sessionId);
+      if (currentSessionData?.autoSaveEnabled) {
         this.saveOutput(sessionId, data);
       }
     });

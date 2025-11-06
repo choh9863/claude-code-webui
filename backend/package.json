@@ -4,7 +4,7 @@
   "description": "Backend server for Claude Code Web UI",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "npx tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
     "test": "jest"

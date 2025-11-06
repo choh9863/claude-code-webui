@@ -34,6 +34,8 @@ export interface MessageMetadata {
   codeBlocks?: CodeBlock[];
   status?: 'pending' | 'streaming' | 'completed' | 'error';
   error?: string;
+  type?: string; // Output type from CLI parser (text, code, thinking, tool, error)
+  raw?: string;  // Raw ANSI output from CLI
 }
 
 export interface ToolCall {

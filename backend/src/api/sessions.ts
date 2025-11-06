@@ -147,8 +147,34 @@ router.delete('/:id', (req: Request, res: Response) => {
 router.get('/:id/messages', (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
-    const offset = req.query.offset ? parseInt(req.query.offset as string) : undefined;
+
+    // Validate and parse pagination parameters
+    let limit: number | undefined = undefined;
+    let offset: number | undefined = undefined;
+
+    if (req.query.limit) {
+      const parsedLimit = parseInt(req.query.limit as string, 10);
+      if (!isFinite(parsedLimit) || parsedLimit < 0) {
+        const response: ApiResponse<null> = {
+          success: false,
+          error: 'Invalid limit parameter. Must be a non-negative number.',
+        };
+        return res.status(400).json(response);
+      }
+      limit = parsedLimit;
+    }
+
+    if (req.query.offset) {
+      const parsedOffset = parseInt(req.query.offset as string, 10);
+      if (!isFinite(parsedOffset) || parsedOffset < 0) {
+        const response: ApiResponse<null> = {
+          success: false,
+          error: 'Invalid offset parameter. Must be a non-negative number.',
+        };
+        return res.status(400).json(response);
+      }
+      offset = parsedOffset;
+    }
 
     const messages = MessageModel.findBySessionId(id, limit, offset);
 
