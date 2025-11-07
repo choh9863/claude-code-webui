@@ -49,18 +49,16 @@ npm install
 
 4. **Set up environment variables**
 
-Backend `.env`:
+From the project root:
 ```bash
-cp .env.example .env
-# Edit .env with your configuration
+# Backend .env
+cp .env.example backend/.env
+
+# Frontend .env (optional, uses defaults)
+cp frontend/.env.example frontend/.env
 ```
 
-Frontend `.env`:
-```bash
-cd frontend
-cp .env.example .env
-# Edit .env if needed
-```
+The default settings should work out of the box. You can edit these files later if needed.
 
 ## Development
 
