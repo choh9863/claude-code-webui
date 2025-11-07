@@ -175,11 +175,10 @@ function App() {
   // Handle create project
   const handleCreateProject = async (
     name: string,
-    directoryPath: string,
     description?: string
   ) => {
     try {
-      const res = await projectsAPI.create({ name, directoryPath, description });
+      const res = await projectsAPI.create({ name, description });
       if (res.success && res.data) {
         addProject(res.data);
       }

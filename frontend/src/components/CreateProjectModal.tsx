@@ -4,7 +4,7 @@ import { X } from 'lucide-react';
 interface CreateProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (name: string, directoryPath: string, description?: string) => void;
+  onSubmit: (name: string, description?: string) => void;
 }
 
 export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
@@ -13,15 +13,13 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   onSubmit,
 }) => {
   const [name, setName] = useState('');
-  const [directoryPath, setDirectoryPath] = useState('');
   const [description, setDescription] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim() && directoryPath.trim()) {
-      onSubmit(name.trim(), directoryPath.trim(), description.trim() || undefined);
+    if (name.trim()) {
+      onSubmit(name.trim(), description.trim() || undefined);
       setName('');
-      setDirectoryPath('');
       setDescription('');
       onClose();
     }
@@ -56,20 +54,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
               className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="My Awesome Project"
               required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-slate-300 mb-2">
-              Directory Path *
-            </label>
-            <input
-              type="text"
-              value={directoryPath}
-              onChange={(e) => setDirectoryPath(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="/path/to/project"
-              required
+              autoFocus
             />
           </div>
 
@@ -84,6 +69,10 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
               placeholder="Brief description of your project"
               rows={3}
             />
+          </div>
+
+          <div className="text-xs text-slate-500 mb-4">
+            📁 Project files will be stored in: <span className="font-mono">projects/[auto-generated-id]</span>
           </div>
 
           <div className="flex gap-2 justify-end">

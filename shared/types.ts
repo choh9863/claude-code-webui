@@ -80,7 +80,7 @@ export interface WebSocketEvents {
 export interface CreateProjectRequest {
   name: string;
   description?: string;
-  directoryPath: string;
+  directoryPath?: string; // Optional - auto-generated if not provided
 }
 
 export interface UpdateProjectRequest {

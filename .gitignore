@@ -22,6 +22,9 @@ build/
 *.db-journal
 data/
 
+# Project files
+projects/
+
 # Logs
 npm-debug.log*
 yarn-debug.log*

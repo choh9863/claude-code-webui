@@ -2,6 +2,9 @@ import { Router, Request, Response } from 'express';
 import { ProjectModel } from '../models/Project';
 import { SessionModel } from '../models/Session';
 import type { CreateProjectRequest, UpdateProjectRequest, ApiResponse } from '../../../shared/types';
+import { v4 as uuidv4 } from 'uuid';
+import * as path from 'path';
+import * as fs from 'fs';
 
 const router = Router();
 
@@ -54,15 +57,28 @@ router.get('/:id', (req: Request, res: Response) => {
 // POST /api/projects - Create new project
 router.post('/', (req: Request<{}, {}, CreateProjectRequest>, res: Response) => {
   try {
-    const { name, description, directoryPath } = req.body;
+    const { name, description } = req.body;
 
-    if (!name || !directoryPath) {
+    if (!name) {
       const response: ApiResponse<null> = {
         success: false,
-        error: 'Name and directoryPath are required',
+        error: 'Name is required',
       };
       return res.status(400).json(response);
     }
+
+    // Generate unique project ID and directory path
+    const projectId = uuidv4();
+    const projectsBaseDir = path.join(process.cwd(), 'projects');
+    const directoryPath = path.join(projectsBaseDir, projectId);
+
+    // Create the projects directory if it doesn't exist
+    if (!fs.existsSync(projectsBaseDir)) {
+      fs.mkdirSync(projectsBaseDir, { recursive: true });
+    }
+
+    // Create the project directory
+    fs.mkdirSync(directoryPath, { recursive: true });
 
     const project = ProjectModel.create(name, directoryPath, description);
 
