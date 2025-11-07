@@ -16,16 +16,16 @@ A modern web-based user interface for Claude CLI, providing enhanced accessibili
 
 - **Backend**: Node.js + Express + TypeScript + Socket.io + SQLite
 - **Frontend**: React + Vite + TypeScript + TailwindCSS + Zustand
-- **CLI Integration**: Uses `node-pty` to spawn and control Claude CLI processes
+- **CLI Integration**: Uses `node-pty` (when available) or child_process to spawn and control Claude CLI processes
 
 ## Prerequisites
 
-- **Node.js 18.x or 20.x** (⚠️ Node 22+ is not yet supported due to native dependency limitations)
+- **Node.js 18+** (tested on 18.x, 20.x, and 22.x)
 - npm 8+ (comes with Node.js)
 - Claude CLI installed and authenticated (`claude` command available)
 - Modern web browser
 
-> **Note**: This project uses `node-pty-prebuilt-multiarch` which provides prebuilt binaries up to Node 20. If you're using Node 22+, please downgrade to Node 20 LTS for compatibility.
+> **Note**: This project uses `node-pty-prebuilt-multiarch` as an optional dependency. On Node 20 and below, it provides enhanced terminal features (PTY support with ANSI colors). On Node 22+, it gracefully falls back to standard child process mode. Both modes are fully functional.
 
 ## Installation
 
@@ -154,11 +154,11 @@ For production, consider:
 
 ## Troubleshooting
 
-**npm install fails with node-gyp or prebuild errors**
-- You may be using Node 22+ which is not yet supported
-- Downgrade to Node 20 LTS: `nvm install 20 && nvm use 20`
-- Or use Node 18.x: `nvm install 18 && nvm use 18`
-- Run `npm install` again after switching Node versions
+**npm install shows warnings about node-pty-prebuilt-multiarch**
+- This is expected on Node 22+ since node-pty doesn't have prebuilt binaries for Node 22
+- The application will automatically use fallback mode (child_process) instead
+- All features will work normally, though terminal color support may be limited
+- If you want full PTY features with ANSI colors, use Node 20 or below
 
 **Claude CLI not found**
 - Ensure Claude CLI is installed: `which claude`

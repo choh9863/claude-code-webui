@@ -1,6 +1,14 @@
-import * as pty from 'node-pty-prebuilt-multiarch';
 import { EventEmitter } from 'events';
+import { spawn, ChildProcess } from 'child_process';
 import stripAnsi from 'strip-ansi';
+
+// Try to import node-pty, fallback to null if not available
+let pty: any = null;
+try {
+  pty = require('node-pty-prebuilt-multiarch');
+} catch (error) {
+  console.warn('node-pty-prebuilt-multiarch not available, using fallback mode');
+}
 
 export interface ClaudeCliOptions {
   sessionId: string;
@@ -15,50 +23,34 @@ export interface OutputChunk {
 }
 
 export class ClaudeCliSession extends EventEmitter {
-  private process: pty.IPty | null = null;
+  private ptyProcess: any = null;
+  private childProcess: ChildProcess | null = null;
   private sessionId: string;
   private workingDirectory: string;
   private cliPath: string;
   private buffer: string = '';
   private isRunning: boolean = false;
+  private usePty: boolean = false;
 
   constructor(options: ClaudeCliOptions) {
     super();
     this.sessionId = options.sessionId;
     this.workingDirectory = options.workingDirectory;
     this.cliPath = options.cliPath || 'claude';
+    this.usePty = pty !== null;
   }
 
   start(): void {
-    if (this.process) {
+    if (this.ptyProcess || this.childProcess) {
       throw new Error('Claude CLI process already started');
     }
 
     try {
-      this.process = pty.spawn(this.cliPath, [], {
-        name: 'xterm-color',
-        cols: 120,
-        rows: 30,
-        cwd: this.workingDirectory,
-        env: {
-          ...process.env,
-          TERM: 'xterm-256color',
-          COLORTERM: 'truecolor',
-        },
-      });
-
-      this.isRunning = true;
-      this.emit('started', { sessionId: this.sessionId });
-
-      this.process.onData((data: string) => {
-        this.handleOutput(data);
-      });
-
-      this.process.onExit(({ exitCode, signal }) => {
-        this.isRunning = false;
-        this.emit('exited', { sessionId: this.sessionId, exitCode, signal });
-        this.process = null;
-      });
+      if (this.usePty) {
+        this.startWithPty();
+      } else {
+        this.startWithChildProcess();
+      }
     } catch (error) {
       this.emit('error', {
         sessionId: this.sessionId,
@@ -68,13 +60,84 @@ export class ClaudeCliSession extends EventEmitter {
     }
   }
 
+  private startWithPty(): void {
+    this.ptyProcess = pty.spawn(this.cliPath, [], {
+      name: 'xterm-color',
+      cols: 120,
+      rows: 30,
+      cwd: this.workingDirectory,
+      env: {
+        ...process.env,
+        TERM: 'xterm-256color',
+        COLORTERM: 'truecolor',
+      },
+    });
+
+    this.isRunning = true;
+    this.emit('started', { sessionId: this.sessionId });
+
+    this.ptyProcess.onData((data: string) => {
+      this.handleOutput(data);
+    });
+
+    this.ptyProcess.onExit(({ exitCode, signal }: any) => {
+      this.isRunning = false;
+      this.emit('exited', { sessionId: this.sessionId, exitCode, signal });
+      this.ptyProcess = null;
+    });
+  }
+
+  private startWithChildProcess(): void {
+    this.childProcess = spawn(this.cliPath, [], {
+      cwd: this.workingDirectory,
+      env: {
+        ...process.env,
+        FORCE_COLOR: '1',
+      },
+      shell: true,
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+
+    this.isRunning = true;
+    this.emit('started', { sessionId: this.sessionId });
+
+    this.childProcess.stdout?.on('data', (data: Buffer) => {
+      this.handleOutput(data.toString());
+    });
+
+    this.childProcess.stderr?.on('data', (data: Buffer) => {
+      this.handleOutput(data.toString());
+    });
+
+    this.childProcess.on('exit', (code, signal) => {
+      this.isRunning = false;
+      this.emit('exited', {
+        sessionId: this.sessionId,
+        exitCode: code,
+        signal
+      });
+      this.childProcess = null;
+    });
+
+    this.childProcess.on('error', (error) => {
+      this.emit('error', {
+        sessionId: this.sessionId,
+        error: error.message,
+      });
+    });
+  }
+
   sendMessage(message: string): void {
-    if (!this.process || !this.isRunning) {
+    if (!this.isRunning) {
       throw new Error('Claude CLI process not running');
     }
 
-    // Send the message with newline
-    this.process.write(message + '\r');
+    if (this.usePty && this.ptyProcess) {
+      this.ptyProcess.write(message + '\r');
+    } else if (this.childProcess && this.childProcess.stdin) {
+      this.childProcess.stdin.write(message + '\n');
+    }
+
     this.emit('message_sent', { sessionId: this.sessionId, message });
   }
 
@@ -147,18 +210,25 @@ export class ClaudeCliSession extends EventEmitter {
   }
 
   terminate(): void {
-    if (this.process) {
-      this.process.kill();
-      this.process = null;
-      this.isRunning = false;
-      this.emit('terminated', { sessionId: this.sessionId });
+    if (this.ptyProcess) {
+      this.ptyProcess.kill();
+      this.ptyProcess = null;
     }
+
+    if (this.childProcess) {
+      this.childProcess.kill();
+      this.childProcess = null;
+    }
+
+    this.isRunning = false;
+    this.emit('terminated', { sessionId: this.sessionId });
   }
 
   resize(cols: number, rows: number): void {
-    if (this.process) {
-      this.process.resize(cols, rows);
+    if (this.usePty && this.ptyProcess) {
+      this.ptyProcess.resize(cols, rows);
     }
+    // Child process doesn't support resize
   }
 
   getSessionId(): string {
