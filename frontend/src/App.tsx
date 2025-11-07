@@ -178,12 +178,20 @@ function App() {
     description?: string
   ) => {
     try {
+      console.log('Creating project:', { name, description });
       const res = await projectsAPI.create({ name, description });
+      console.log('API response:', res);
+
       if (res.success && res.data) {
+        console.log('Project created successfully:', res.data);
         addProject(res.data);
+      } else {
+        console.error('Project creation failed:', res.error);
+        alert(`Failed to create project: ${res.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Failed to create project:', error);
+      alert(`Error creating project: ${error instanceof Error ? error.message : 'Network error'}`);
     }
   };
 

@@ -15,16 +15,40 @@ async function fetchAPI<T>(
   endpoint: string,
   options?: RequestInit
 ): Promise<ApiResponse<T>> {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
-  });
+  const url = `${API_BASE_URL}${endpoint}`;
+  console.log(`API Request: ${options?.method || 'GET'} ${url}`);
 
-  const data = await response.json();
-  return data;
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options?.headers,
+      },
+    });
+
+    console.log(`API Response: ${response.status} ${response.statusText}`);
+
+    // Handle HTTP errors
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: response.statusText }));
+      console.error('API Error:', errorData);
+      return {
+        success: false,
+        error: errorData.error || `HTTP ${response.status}: ${response.statusText}`,
+      };
+    }
+
+    const data = await response.json();
+    console.log('API Data:', data);
+    return data;
+  } catch (error) {
+    console.error('Network error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Network error',
+    };
+  }
 }
 
 // Projects API

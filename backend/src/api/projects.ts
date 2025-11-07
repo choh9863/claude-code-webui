@@ -58,8 +58,10 @@ router.get('/:id', (req: Request, res: Response) => {
 router.post('/', (req: Request<{}, {}, CreateProjectRequest>, res: Response) => {
   try {
     const { name, description } = req.body;
+    console.log('Creating project:', { name, description });
 
     if (!name) {
+      console.error('Project creation failed: Name is required');
       const response: ApiResponse<null> = {
         success: false,
         error: 'Name is required',
@@ -72,15 +74,20 @@ router.post('/', (req: Request<{}, {}, CreateProjectRequest>, res: Response) => 
     const projectsBaseDir = path.join(process.cwd(), 'projects');
     const directoryPath = path.join(projectsBaseDir, projectId);
 
+    console.log('Generated project path:', directoryPath);
+
     // Create the projects directory if it doesn't exist
     if (!fs.existsSync(projectsBaseDir)) {
+      console.log('Creating projects base directory:', projectsBaseDir);
       fs.mkdirSync(projectsBaseDir, { recursive: true });
     }
 
     // Create the project directory
+    console.log('Creating project directory:', directoryPath);
     fs.mkdirSync(directoryPath, { recursive: true });
 
     const project = ProjectModel.create(name, directoryPath, description);
+    console.log('Project created in database:', project);
 
     const response: ApiResponse<typeof project> = {
       success: true,
@@ -88,6 +95,7 @@ router.post('/', (req: Request<{}, {}, CreateProjectRequest>, res: Response) => 
     };
     res.status(201).json(response);
   } catch (error) {
+    console.error('Error creating project:', error);
     const response: ApiResponse<null> = {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
