@@ -1,0 +1,49 @@
+{
+  "name": "claude-code-webui-backend",
+  "version": "1.0.0",
+  "description": "Backend server for Claude Code Web UI",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "npx tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "test": "jest"
+  },
+  "keywords": [
+    "claude",
+    "cli",
+    "web",
+    "ui"
+  ],
+  "author": "choh9863",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "dependencies": {
+    "ansi-to-html": "^0.7.2",
+    "better-sqlite3": "^9.2.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "socket.io": "^4.6.1",
+    "strip-ansi": "^7.1.0",
+    "uuid": "^9.0.1"
+  },
+  "optionalDependencies": {
+    "node-pty-prebuilt-multiarch": "0.10.1-pre.5"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.8",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jest": "^29.5.11",
+    "@types/node": "^20.10.6",
+    "@types/uuid": "^9.0.7",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}
